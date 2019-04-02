@@ -7,14 +7,39 @@ public class PlayerTestController : MonoBehaviour {
     private Animator anim;
     private float speed;
     private bool isWalking;
+    private float currentValue;
+    public float interpolateSpd;
+    private float animationValue;
+    private float targetAnimationValue;
+    private float idleValue, walkValue, runValue;
+    private float animCounter;
+    private bool isIdle, isWalk, isRun;
+
+    public AnimationCurve animCurve;
+    public AnimationCurve idleCurve;
 	// Use this for initialization
 	void Start () {
         anim = GetComponent<Animator>();
-        speed = 1.2f;
+        speed = 1f;
+
+        currentValue = 0f;
+        interpolateSpd = 2f;
+        idleValue = 0f;
+        walkValue = .5f;
+        runValue = 1f;
+        animCounter = 0f;
+        isIdle = false;
+        isWalk = false;
+        isRun = false;
+
+
     }
 	
 	// Update is called once per frame
 	void Update () {
+
+        //this.gameObject.transform.Translate(new Vector3(0, 0, currentValue));
+
 
         if (Input.GetKey(KeyCode.Space))
         {
@@ -30,54 +55,76 @@ public class PlayerTestController : MonoBehaviour {
 
             if (!anim.GetBool("isJumping"))
             {
-                //anim.SetBool("isMoving", true);
-                // if it is not jumping then run
-                //anim.SetFloat("blendX", 1f);
-                //anim.SetFloat("blendY", 0f);
-                anim.SetFloat("Blend", 2f);
+                if (!isRun)
+                {
+                    animCounter = 0f;
+                    isIdle = false;
+                    isWalk = false;
+                    isRun = true;
+                }
 
-                speed = 3.0f;
+                speed = 3f;
+
+                animCounter += Time.deltaTime;
+                targetAnimationValue = runValue;
+                if (animationValue < targetAnimationValue)
+                {
+
+                    animationValue = .5f + animCurve.Evaluate(animCounter * interpolateSpd);
+
+                    anim.SetFloat("Blend", animationValue);
+                }
 
 
                 gameObject.transform.Translate(Vector3.forward * speed * Time.deltaTime);
 
             }
+            
         }
         else if (Input.GetKey(KeyCode.W))
         {
-            if (!anim.GetBool("isJumping"))
+            if (!isWalk)
             {
-                anim.SetBool("isMoving", true);
-                
-                //isWalking = true;
-
-                // if it is not jumping walk
-                //anim.SetFloat("blendX", 1f);
-                //anim.SetFloat("blendY", 0f);
-                anim.SetFloat("Blend", 1f);
-                /*
-                if(isWalking == true)
-                {
-                    speed = 1.2f;
-                }
-                else
-                {
-                    speed = 3.0f;
-                }
-                */
-                speed = 1.2f;
-                gameObject.transform.Translate(Vector3.forward * speed * Time.deltaTime);
-
+                animCounter = 0f;
+                isWalk = true;
+                isRun = false;
+                isIdle = false;
             }
 
+            speed = 2f;
+
+            animCounter += Time.deltaTime;
+            targetAnimationValue = walkValue;
+            if (animationValue < targetAnimationValue)
+            {
+                animationValue = animCurve.Evaluate(animCounter * interpolateSpd);
+                
+                anim.SetFloat("Blend", animationValue);
+            }
+            gameObject.transform.Translate(Vector3.forward * speed * Time.deltaTime);
+            
         }
         else
         {
+            if (!isIdle)
+            {
+                animCounter = 0f;
+                isWalk = false;
+                isRun = false;
+                isIdle = true;
+            }
+            animCounter += Time.deltaTime;
+            targetAnimationValue = idleValue;
+            if (animationValue > targetAnimationValue)
+            {
+                animationValue = idleCurve.Evaluate(animCounter * interpolateSpd);
 
-            //anim.SetBool("isMoving", false);
-            //anim.SetFloat("blendX", 0f);
-            //anim.SetFloat("blendY", 0f);
-            anim.SetFloat("Blend", 0f);
+                anim.SetFloat("Blend", animationValue);
+            }
+
+            //anim.SetFloat("Blend", 0f);
+            //animCounter = 0f;
+            //animationValue = 0f;
             
         }
 
