@@ -13,7 +13,7 @@ public class PlayerTestController : MonoBehaviour {
     private float targetAnimationValue;
     private float idleValue, walkValue, runValue;
     private float animCounter;
-    private bool isIdle, isWalk, isRun;
+    private bool isIdle, isWalk, isRun, isRunWalk;
 
     public AnimationCurve animCurve;
     public AnimationCurve idleCurve;
@@ -31,6 +31,7 @@ public class PlayerTestController : MonoBehaviour {
         isIdle = false;
         isWalk = false;
         isRun = false;
+        isRunWalk = false;
 
 
     }
@@ -89,33 +90,59 @@ public class PlayerTestController : MonoBehaviour {
             }
             
         }
-        else if (Input.GetKey(KeyCode.W))
+        else if (Input.GetKey(KeyCode.W)) // Walking animation
         {
-
-            if (!isWalk)
+            if (isRun)
             {
-                Debug.Log("Is walking");
-                animCounter = 0f;
-                isWalk = true;
-                isRun = false;
-                isIdle = false;
-                
-            }
+                if (!isRunWalk)
+                {
+                    //Debug.Log("Is walking");
+                    animCounter = 0f;
+                    isRunWalk = true;
+                }
+                animCounter += Time.deltaTime;
+                targetAnimationValue = walkValue;
+                if (animationValue > targetAnimationValue)
+                {
+                    animationValue = idleCurve.Evaluate(animCounter * interpolateSpd);
 
-            speed = 1f;
+                    anim.SetFloat("Blend", animationValue);
+                }
+                else
+                {
+                    anim.SetFloat("Blend", walkValue);
+                    //isRun = false;
+                }
 
-            animCounter += Time.deltaTime;
-            targetAnimationValue = walkValue;
-            if (animationValue < targetAnimationValue)
-            {
-                animationValue = animCurve.Evaluate(animCounter * interpolateSpd);
-                
-                anim.SetFloat("Blend", animationValue);
             }
             else
             {
-                anim.SetFloat("Blend", walkValue);
-            }
+                if (!isWalk)
+                {
+                    Debug.Log("Is walking");
+                    animCounter = 0f;
+                    isWalk = true;
+                    isRun = false;
+                    isIdle = false;
+
+                }
+
+                speed = 1f;
+
+                animCounter += Time.deltaTime;
+                targetAnimationValue = walkValue;
+                if (animationValue < targetAnimationValue)
+                {
+                    animationValue = animCurve.Evaluate(animCounter * interpolateSpd);
+
+                    anim.SetFloat("Blend", animationValue);
+                }
+                else
+                {
+                    anim.SetFloat("Blend", walkValue);
+                }
+            }    
+
             gameObject.transform.Translate(Vector3.forward * speed * Time.deltaTime);
             
         }else if (Input.GetKey(KeyCode.O)){
